@@ -8,9 +8,8 @@
   const CARD_BORDER = 8; // 0.5rem
   const CARD_PADDING = 16; // 1rem
   const SECTION_WIDTH = 400;
-  const CHART_HEIGHT = 150;
-  const CHART_WIDTH = SECTION_WIDTH - 2 * (CARD_BORDER + CARD_PADDING);
-  console.log('CounterTrend.svelte x: CHART_WIDTH =', CHART_WIDTH);
+  const CHART_HEIGHT = 130;
+  const CHART_WIDTH = SECTION_WIDTH - CARD_PADDING - 6;
   const DAYS_IN_MONTH = 31; // It's okay that not all months have this many.
   const BAR_WIDTH = CHART_WIDTH / DAYS_IN_MONTH;
 
@@ -31,7 +30,7 @@
   $: prevValue = data[data.length - 2].value;
   $: lastDelta = lastValue - prevValue;
   $: maxValue = data.reduce((acc, item) => Math.max(acc, item.value), 0);
-  $: viewBox = `0 0 ${CHART_WIDTH} ${maxValue}`;
+  $: viewBox = `0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`;
 
   const getBarColor = (index: number) =>
     index % 2 === 0 ? BAR_DARK : BAR_LIGHT;
@@ -41,28 +40,25 @@
   <div class="card">
     <div class="title">{title}</div>
 
-    <svg
-      height={CHART_HEIGHT}
-      width={CHART_WIDTH}
-      preserveAspectRatio="none"
-      {viewBox}>
-      <text x="0" y="10">TEST</text>
+    <svg height={CHART_HEIGHT} width={CHART_WIDTH} {viewBox}>
       {#each data as item, index}
         <rect
           x={BAR_WIDTH * index}
-          y={maxValue - item.value}
+          y={(maxValue - item.value) / maxValue * CHART_HEIGHT}
           width={BAR_WIDTH}
-          height={item.value}
+          height={CHART_HEIGHT * item.value / maxValue}
           fill={getBarColor(index)}>
           {item.day}
           -
           {item.value}
         </rect>
-        <!-- {#if index % 5 === 0}
-          <text textLength={BAR_WIDTH} x={BAR_WIDTH * index} y={maxValue}>
+      {/each}
+      {#each data as item, index}
+        {#if index % 5 === 0}
+          <text x={BAR_WIDTH * index} y={CHART_HEIGHT - 2}>
             {item.day}
           </text>
-        {/if} -->
+        {/if}
       {/each}
     </svg>
 
@@ -74,6 +70,8 @@
 
 <style>
   .card {
+    --day-color: #b8b8b8;
+
     background-color: #f4f4ed;
     border: solid #eee4d5 0.7rem;
     border-radius: 0.5rem;
@@ -82,11 +80,11 @@
   }
 
   .last-delta {
-    color: darkgray;
+    color: var(--day-color);
     font-size: 1.4rem;
     font-weight: bold;
     position: absolute;
-    top: 6rem;
+    bottom: 2rem;
     right: 1rem;
   }
 
@@ -95,7 +93,7 @@
     font-weight: bold;
     height: 4rem;
     position: absolute;
-    top: 2rem;
+    bottom: 3.3rem;
     left: 2rem;
   }
 
@@ -111,13 +109,14 @@
     font-size: 1.2rem;
     font-weight: bold;
     position: absolute;
-    top: 6rem;
+    bottom: 2rem;
     left: 2rem;
   }
 
-  /* svg text {
-    font-size: 1rem;
-  } */
+  svg text {
+    fill: var(--day-color);
+    font-size: 0.7rem;
+  }
 
   .title {
     box-sizing: border-box;
